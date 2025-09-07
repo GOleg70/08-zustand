@@ -18,13 +18,12 @@ function mapSlugToTag(slug: string[] | undefined): NoteTag | undefined {
   return allowed.includes(raw) ? (raw as NoteTag) : undefined;
 }
 
-// 🟢 SEO metadata (EN)
 export async function generateMetadata({
   params,
 }: {
   params: Promise<Params>;
 }): Promise<Metadata> {
-  const { slug } = await params; // ✅ обов’язково await
+  const { slug } = await params;
   const raw = slug?.[0] ?? 'All';
 
   const title =
@@ -40,7 +39,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: `https://your-vercel-domain.vercel.app/notes/filter/${raw}`,
+      url: `https://08-zustand-xi-one.vercel.app/notes/filter/${raw}`,
       images: [
         {
           url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
@@ -56,7 +55,7 @@ export default async function NotesPage({
 }: {
   params: Promise<Params>;
 }) {
-  const { slug } = await params; // ✅ тут теж чекаємо
+  const { slug } = await params;
 
   const tag = mapSlugToTag(slug);
   const queryClient = getQueryClient();

@@ -1,64 +1,62 @@
-"use client";
+'use client';
 
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote } from "@/lib/api";
-import type { NoteTag, CreateNote } from "../../types/note";
-import ErrorMessage from "../ErrorMessage/ErrorMessage";
-import css from "./NoteForm.module.css";
+import { useRouter } from 'next/navigation';
+import { useNoteStore } from '@/lib/store/noteStore';
+import { createNote } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import css from './NoteForm.module.css';
 
-interface NoteFormProps {
-  onClose: () => void;
-}
+export default function NoteForm() {
+  const router = useRouter();
+  const { draft, setDraft, clearDraft } = useNoteStore();
 
-const validationSchema = Yup.object().shape({
-  title: Yup.string()
-    .min(3, "The title must be at least 3 characters long.")
-    .max(50, "The title should be no longer than 50 characters.")
-    .required("Title is a required field"),
-  content: Yup.string().max(500, "Content must be no more than 500 characters."),
-  tag: Yup.mixed<NoteTag>()
-    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"], "Invalid tag")
-    .required("Tag is a required field."),
-});
+  const [isReady, setIsReady] = useState(false);
 
-export default function NoteForm({ onClose }: NoteFormProps) {
-  const queryClient = useQueryClient();
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
 
-  const createMutation = useMutation({
-    mutationFn: (newNote: CreateNote) => createNote(newNote),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      onClose();
-    },
-    onError: (error) => {
-      console.error("Error creating note:", error);
-    },
-  });
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setDraft({ [name]: value });
+  };
 
-  const formik = useFormik({
-    initialValues: { title: "", content: "", tag: "Todo" as NoteTag },
-    validationSchema,
-    onSubmit: (values) => {
-      createMutation.mutate(values);
-    },
-  });
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      await createNote(draft);
+      clearDraft();
+      router.back();
+    } catch (error) {
+      console.error('Error creating note:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    router.back();
+  };
+
+  if (!isReady) {
+    return null;
+  }
 
   return (
-    <form onSubmit={formik.handleSubmit} className={css.form}>
+    <form onSubmit={handleSubmit} className={css.form}>
       {/* Title */}
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
           id="title"
+          name="title"
           type="text"
           className={css.input}
-          {...formik.getFieldProps("title")}
+          value={draft.title}
+          onChange={handleInputChange}
         />
-        {formik.touched.title && formik.errors.title && (
-          <ErrorMessage message={formik.errors.title} />
-        )}
       </div>
 
       {/* Content */}
@@ -66,41 +64,43 @@ export default function NoteForm({ onClose }: NoteFormProps) {
         <label htmlFor="content">Content</label>
         <textarea
           id="content"
+          name="content"
           rows={8}
           className={css.textarea}
-          {...formik.getFieldProps("content")}
+          value={draft.content}
+          onChange={handleInputChange}
         />
-        {formik.touched.content && formik.errors.content && (
-          <ErrorMessage message={formik.errors.content} />
-        )}
       </div>
 
       {/* Tag */}
       <div className={css.formGroup}>
         <label htmlFor="tag">Tag</label>
-        <select id="tag" className={css.select} {...formik.getFieldProps("tag")}>
+        <select
+          id="tag"
+          name="tag"
+          className={css.select}
+          value={draft.tag}
+          onChange={handleInputChange}
+        >
           <option value="Todo">Todo</option>
           <option value="Work">Work</option>
           <option value="Personal">Personal</option>
           <option value="Meeting">Meeting</option>
           <option value="Shopping">Shopping</option>
         </select>
-        {formik.touched.tag && formik.errors.tag && (
-          <ErrorMessage message={formik.errors.tag} />
-        )}
       </div>
 
       {/* Actions */}
       <div className={css.actions}>
-        <button type="button" onClick={onClose} className={css.cancelButton}>
+        <button
+          type="button"
+          onClick={handleCancel}
+          className={css.cancelButton}
+        >
           Cancel
         </button>
-        <button
-          type="submit"
-          className={css.submitButton}
-          disabled={!formik.isValid || createMutation.isPending}
-        >
-          {createMutation.isPending ? "Creating..." : "Create note"}
+        <button type="submit" className={css.submitButton}>
+          Create note
         </button>
       </div>
     </form>

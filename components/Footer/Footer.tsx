@@ -1,5 +1,5 @@
 // components/Footer/Footer.tsx
-import css from "./Footer.module.css";
+import css from './Footer.module.css';
 
 export default function Footer() {
   return (
@@ -9,8 +9,8 @@ export default function Footer() {
         <div className={css.wrap}>
           <p>Developer: Hanus Oleg</p>
           <p>
-            Contact us:{" "}
-            <a href="mailto:oleg110770@gamil.com">oleg110770@gamil.com</a>
+            Contact us:{' '}
+            <a href="mailto:oleg110770@gamil.com">oleg110770@gmail.com</a>
           </p>
         </div>
       </div>

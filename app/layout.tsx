@@ -22,7 +22,11 @@ export const metadata: Metadata = {
     description:
       'Manage your notes effortlessly. Create, organize, and track your ideas with NoteHub.',
     url: 'https://08-zustand-xi-one.vercel.app/',
-    images: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+    images: [
+      {
+        url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+      },
+    ],
   },
 };
 
